@@ -33,9 +33,11 @@
     }
     #tokenInput {
       right: 50%;
+      width: 300px; /* Make the token input box wider */
+      padding: 10px;
     }
     #initButton {
-      right: 450px;
+      right: 30%; /* Adjusted to align better with token input */
     }
     #playPauseButton {
       right: 500px;
@@ -44,22 +46,74 @@
     #map {
       position: absolute;
       bottom: 20px;
-      right: 10px;
+      right: 20px;
       width: 300px;
       height: 200px;
       z-index: 1000;
       display: none; /* Initially hidden */
       border: 2px solid black;
     }
+    /* Intro Text Styling */
+    #introText {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 1000;
+      background: rgba(255, 255, 255, 0.9); /* Semi-transparent background */
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+      max-width: 600px;
+      text-align: left;
+    }
+
+    #introText h1 {
+      margin-bottom: 20px;
+      font-size: 28px;
+      text-align: center;
+    }
+
+    #introText p {
+      margin: 10px 0;
+      font-size: 16px;
+      line-height: 1.5;
+    }
+
+    #introText a {
+      color: #007bff;
+      text-decoration: none;
+    }
+
+    #introText a:hover {
+      text-decoration: underline;
+    }
+    /* Styling for Terms of Service Link */
+    #termsLink {
+      font-size: 10px; /* Make the text smaller */
+      display: block;
+      text-align: right; /* Align to the right */
+      margin-top: 10px; /* Add some space above */
+    }
   </style>
 </head>
 <body>
+  <div id="introText">
+    <h1>Welcome to the Flight Simulator</h1>
+    <p>Please input your Cesium Access Token below and upload your CSV file on the next page to visualize the data in a 3D environment.</p>
+    <p>If you do not have an access token, please create a free account and obtain one here: <a href="https://ion.cesium.com/signin/tokens?page=1" target="_blank">Cesium Ion</a>.</p>
+    <p><strong>Important:</strong> The CSV file must contain the columns "Longitude", "Latitude", "Altitude", and "Bearing" (case sensitive).</p>
+    <p>To further process your data, please visit this <a href="https://github.com/gayatro/fly-visual/tree/main" target="_blank">GitHub repository</a> and run the "data-processor" script to calculate the required parameters. This script is recommended as it produces the most compatible output for this simulator, and it will only require your Longitude and Latitude values. </p>
+    <p>Enjoy the simulation!</p>
+    <a id="termsLink" href="https://cesium.com/legal/terms-of-service/" target="_blank">Cesium ion Terms of Service</a>
+  </div>
+  
   <div id="cesiumContainer"></div>
   <div id="map"></div>
   <input type="range" id="slider" min="0" max="100" value="0">
   <input type="file" id="fileInput" accept=".csv">
   <input type="text" id="tokenInput" placeholder="Enter Cesium Access Token">
-  <button id="initButton">Initialise Map</button>
+  <button id="initButton">Initialize Map</button>
   <button id="playPauseButton">Play</button>
 
   <script>
@@ -84,6 +138,9 @@
         document.getElementById('playPauseButton').style.display = 'block';
         document.getElementById('tokenInput').style.display = 'none';
         document.getElementById('initButton').style.display = 'none';
+
+        // Hide the intro text after initialization
+        document.getElementById('introText').style.display = 'none';
 
         // Initialize the Cesium viewer with terrain
         viewer = new Cesium.Viewer('cesiumContainer', {
