@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CesiumJS - Fast Flythrough with 2D Map</title>
+  <script src="https://cesium.com/downloads/cesiumjs/releases/1.88/Build/Cesium/Cesium.js"></script>
+  <link href="https://cesium.com/downloads/cesiumjs/releases/1.88/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+  <style>
+    #cesiumContainer {
+      width: 100%;
+      height: 100vh;
+      margin: 0;
+      padding: 0;
+      display: none; /* Initially hidden */
+    }
+    #slider, #fileInput, #tokenInput, #initButton, #playPauseButton {
+      position: absolute;
+      bottom: 20px;
+    }
+    #slider {
+      left: 50%;
+      transform: translateX(-50%);
+      width: 300px;
+      display: none; /* Initially hidden */
+    }
+    #fileInput {
+      left: 20px;
+      top: 20px;
+      display: none; /* Initially hidden */
+    }
+    #tokenInput {
+      right: 50%;
+    }
+    #initButton {
+      right: 450px;
+    }
+    #playPauseButton {
+      right: 500px;
+      display: none; /* Initially hidden */
+    }
+    #map {
+      position: absolute;
+      bottom: 20px;
+      right: 10px;
+      width: 300px;
+      height: 200px;
+      z-index: 1000;
+      display: none; /* Initially hidden */
+      border: 2px solid black;
+    }
+  </style>
+</head>
+<body>
+  <div id="cesiumContainer"></div>
+  <div id="map"></div>
+  <input type="range" id="slider" min="0" max="100" value="0">
+  <input type="file" id="fileInput" accept=".csv">
+  <input type="text" id="tokenInput" placeholder="Enter Cesium Access Token">
+  <button id="initButton">Initialise Map</button>
+  <button id="playPauseButton">Play</button>
+
+  <script>
+    let viewer;
+    let coordinates = [];
+    let currentIndex = 0;
+    let isPlaying = false;
+    let map, marker, polyline;
+
+    // Function to initialize the Cesium viewer
+    async function initializeCesium() {
+      const accessToken = document.getElementById('tokenInput').value;
+
+      if (accessToken) {
+        Cesium.Ion.defaultAccessToken = accessToken;
+
+        // Show the Cesium container and controls
+        document.getElementById('cesiumContainer').style.display = 'block';
+        document.getElementById('map').style.display = 'block';
+        document.getElementById('slider').style.display = 'block';
+        document.getElementById('fileInput').style.display = 'block';
+        document.getElementById('playPauseButton').style.display = 'block';
+        document.getElementById('tokenInput').style.display = 'none';
+        document.getElementById('initButton').style.display = 'none';
+
+        // Initialize the Cesium viewer with terrain
+        viewer = new Cesium.Viewer('cesiumContainer', {
+          terrainProvider: Cesium.createWorldTerrain()
+        });
+
+        // Add Cesium OSM Buildings
+        const osmBuildings = viewer.scene.primitives.add(Cesium.createOsmBuildings());
+
+        // Initialize Leaflet map
+        map = L.map('map').setView([0, 0], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 19
+        }).addTo(map);
+
+        polyline = L.polyline([], { color: 'red' }).addTo(map);
+        marker = L.circleMarker([0, 0], {
+            radius: 4, // Radius of the circle in pixels
+            color: 'black', // Stroke color
+            fillColor: 'pink', // Fill color
+            fillOpacity: 0.5, // Fill opacity
+        }).addTo(map).bringToFront();
+      } else {
+        alert('Please enter a valid Cesium access token.');
+      }
+    }
+
+    // Parse the CSV file
+    function parseCSV(csvText) {
+      const rows = csvText.split('\n');
+      const header = rows[0].split(',').map(column => column.trim().toLowerCase());
+
+      const longitudeIndex = header.indexOf('longitude');
+      const latitudeIndex = header.indexOf('latitude');
+      const bearingIndex = header.indexOf('bearing');
+      const altitudeIndex = header.indexOf('altitude');
+
+      if (longitudeIndex === -1 || latitudeIndex === -1 || bearingIndex === -1 || altitudeIndex === -1) {
+        alert('CSV file must contain "Longitude", "Latitude", "Bearing", and "Altitude" columns.');
+        return;
+      }
+
+      rows.slice(1).forEach(row => {
+        const columns = row.split(',');
+        const longitude = parseFloat(columns[longitudeIndex]);
+        const latitude = parseFloat(columns[latitudeIndex]);
+        const bearing = parseFloat(columns[bearingIndex]);
+        const altitude = parseFloat(columns[altitudeIndex]);
+
+        if (!isNaN(longitude) && !isNaN(latitude) && !isNaN(bearing) && !isNaN(altitude)) {
+          coordinates.push({ longitude, latitude, bearing, altitude });
+          polyline.addLatLng([latitude, longitude]); // Add point to the polyline
+        }
+      });
+
+      if (coordinates.length > 0) {
+        document.getElementById('slider').max = coordinates.length - 1;
+        const { latitude, longitude } = coordinates[0];
+        map.setView([latitude, longitude], 12); // Center the map on the first point
+        marker.setLatLng([latitude, longitude]); // Place the marker at the first point
+      } else {
+        alert('No valid coordinates found in the CSV file.');
+      }
+    }
+
+    // Function to move the camera continuously between points
+    function playFlythrough() {
+      if (!isPlaying || currentIndex >= coordinates.length) return;
+
+      const { longitude, latitude, bearing, altitude } = coordinates[currentIndex];
+      const destination = Cesium.Cartesian3.fromDegrees(longitude, latitude, altitude);
+
+      const heading = Cesium.Math.toRadians(bearing);
+      const pitch = Cesium.Math.toRadians(-15);
+
+      viewer.camera.flyTo({
+        destination: destination,
+        orientation: {
+          heading: heading,
+          pitch: pitch,
+          roll: 0
+        },
+        duration: 0.1, // Shorter duration for faster transitions
+        complete: () => {
+          marker.setLatLng([latitude, longitude]); // Move the marker to the current point
+          currentIndex += 2; // Increase step size to speed up flythrough (can adjust as needed)
+          if (currentIndex >= coordinates.length) {
+            currentIndex = 0; // Loop back to the start
+          }
+          playFlythrough(); // Continue the flythrough
+        }
+      });
+
+      document.getElementById('slider').value = currentIndex;
+    }
+
+    // Event listener for the slider
+    document.getElementById('slider').addEventListener('input', function (event) {
+      currentIndex = parseInt(event.target.value, 10);
+      isPlaying = false; // Stop the auto-play if the slider is used
+      document.getElementById('playPauseButton').textContent = 'Play';
+      moveToCoordinate(currentIndex, 0.1); // Instant move for slider interaction
+    });
+
+    // Function to move the camera to a specific point with bearing and elevation
+    function moveToCoordinate(index, duration = 0.1) {
+      if (index < 0 || index >= coordinates.length) return;
+
+      const { longitude, latitude, bearing, altitude } = coordinates[index];
+      const destination = Cesium.Cartesian3.fromDegrees(longitude, latitude, altitude);
+
+      const heading = Cesium.Math.toRadians(bearing);
+      const pitch = Cesium.Math.toRadians(-15);
+
+      viewer.camera.flyTo({
+        destination: destination,
+        orientation: {
+          heading: heading,
+          pitch: pitch,
+          roll: 0
+        },
+        duration: duration
+      });
+
+      document.getElementById('slider').value = index;
+      marker.setLatLng([latitude, longitude]); // Move the marker to the current point
+    }
+
+    // Event listener for play/pause button
+    document.getElementById('playPauseButton').addEventListener('click', function () {
+      if (isPlaying) {
+        isPlaying = false;
+        this.textContent = 'Play';
+      } else {
+        isPlaying = true;
+        this.textContent = 'Pause';
+        playFlythrough(); // Start the flythrough
+      }
+    });
+
+    // Event listener for file input
+    document.getElementById('fileInput').addEventListener('change', function (event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          const csvText = e.target.result;
+          coordinates = []; // Clear previous coordinates
+          parseCSV(csvText);
+        };
+        reader.readAsText(file);
+      }
+    });
+
+    // Initialize Cesium on button click
+    document.getElementById('initButton').addEventListener('click', initializeCesium);
+  </script>
+</body>
+</html>
