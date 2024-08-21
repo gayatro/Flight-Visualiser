@@ -26,21 +26,50 @@
       width: 300px;
       display: none; /* Initially hidden */
     }
+    #pitchSlider {
+      position: absolute;
+      left: 20px; /* Position it towards the left of the screen */
+      top: 72%; /* Adjust position */
+      transform: translateY(-50%) rotate(-90deg); /* Rotate it to make it vertical */
+      width: 300px;
+      height: 20px; /* Adjust the height */
+      transform-origin: left center; /* Set the rotation origin */
+      writing-mode: bt-lr; /* Set writing mode to ensure the slider is vertical */
+      display: none; /* Initially hidden */
+      background: transparent; /* Ensure the background is transparent */
+      z-index: 1000; /* Ensure it's above other elements */
+    }
+    #pitchLabel {
+      position: absolute;
+      color: #ffffff;
+      left: 40px; /* Position it to the right of the slider */
+      top: 55%; /* Align with the slider */
+      transform: translateY(-50%) rotate(-90deg); /* Rotate the text to match the slider */
+      transform-origin: left center;
+      font-size: 13px;
+      font-weight: bold;
+      z-index: 1000;
+      display: none; /* Initially hidden */
+    }
     #fileInput {
       left: 20px;
       top: 20px;
       display: none; /* Initially hidden */
     }
     #tokenInput {
-      right: 50%;
-      width: 300px; /* Make the token input box wider */
+      left: 45%;
+      bottom: 30px;
+      transform: translateX(-50%);
+      width: 300px;
       padding: 10px;
     }
     #initButton {
-      right: 30%; /* Adjusted to align better with token input */
+      left: 65%;
+      bottom: 30px;
+      transform: translateX(-50%);
     }
     #playPauseButton {
-      right: 500px;
+      right: 480px;
       display: none; /* Initially hidden */
     }
     #map {
@@ -67,24 +96,20 @@
       max-width: 600px;
       text-align: left;
     }
-
     #introText h1 {
       margin-bottom: 20px;
       font-size: 28px;
       text-align: center;
     }
-
     #introText p {
       margin: 10px 0;
       font-size: 16px;
       line-height: 1.5;
     }
-
     #introText a {
       color: #007bff;
       text-decoration: none;
     }
-
     #introText a:hover {
       text-decoration: underline;
     }
@@ -111,6 +136,8 @@
   <div id="cesiumContainer"></div>
   <div id="map"></div>
   <input type="range" id="slider" min="0" max="100" value="0">
+  <div id="pitchLabel">Pitch</div>
+  <input type="range" id="pitchSlider" min="-90" max="90" value="-15">
   <input type="file" id="fileInput" accept=".csv">
   <input type="text" id="tokenInput" placeholder="Enter Cesium Access Token">
   <button id="initButton">Initialise Map</button>
@@ -138,6 +165,10 @@
         document.getElementById('playPauseButton').style.display = 'block';
         document.getElementById('tokenInput').style.display = 'none';
         document.getElementById('initButton').style.display = 'none';
+
+        // Show the pitch slider after initialization
+        document.getElementById('pitchSlider').style.display = 'block';
+        document.getElementById('pitchLabel').style.display = 'block';
 
         // Hide the intro text after initialization
         document.getElementById('introText').style.display = 'none';
@@ -214,7 +245,7 @@
       const destination = Cesium.Cartesian3.fromDegrees(longitude, latitude, altitude);
 
       const heading = Cesium.Math.toRadians(bearing);
-      const pitch = Cesium.Math.toRadians(-15);
+      const pitch = Cesium.Math.toRadians(parseFloat(document.getElementById('pitchSlider').value));
 
       viewer.camera.flyTo({
         destination: destination,
@@ -253,7 +284,7 @@
       const destination = Cesium.Cartesian3.fromDegrees(longitude, latitude, altitude);
 
       const heading = Cesium.Math.toRadians(bearing);
-      const pitch = Cesium.Math.toRadians(-15);
+      const pitch = Cesium.Math.toRadians(parseFloat(document.getElementById('pitchSlider').value));
 
       viewer.camera.flyTo({
         destination: destination,
