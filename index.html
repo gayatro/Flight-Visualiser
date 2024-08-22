@@ -173,6 +173,15 @@
       line-height: 30px;
       color: white;
     }
+    #loadingText {
+      position: absolute;
+      top: -36px; 
+      left: 22%;
+      transform: translateX(-10%);
+      font-size: 13px;
+      color: #ffffff;
+      font-weight: bold;
+    }
     #flightProgressLabel {
       position: absolute;
       right: 6%;
@@ -221,6 +230,7 @@
 
   <!-- Progress Bar Container -->
   <div id="progressContainer">
+    <div id="loadingText">Loading... (Please press "Okay" on the pop up if all parameters are correct)</div>
     <div id="progressBar">0%</div>
   </div>
 
