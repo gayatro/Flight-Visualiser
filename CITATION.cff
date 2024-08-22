@@ -4,10 +4,10 @@ authors:
   - family-names: "Kumar"
     given-names: "Gayatri"
     orcid: "https://orcid.org/0009-0008-6649-7407"
-title: "flight-track-visualiser"
+title: "Flight-Visualiser"
 version: "1.0.0"
 doi: "10.5281/zenodo.xxxxxxx" #will update
 date-released: "2024-08-22"
-url: "https://github.com/gayatro/fly-visual"
-repository-code: "https://github.com/gayatro/fly-visual"
+url: "https://gayatro.github.io/Flight-Visualiser/"
+repository-code: "https://gayatro.github.io/Flight-Visualiser/"
 license: "Apache-2.0"  
