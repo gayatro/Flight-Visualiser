@@ -16,14 +16,32 @@
       padding: 0;
       display: none; /* Initially hidden */
     }
-    #slider, #fileInput, #tokenInput, #initButton, #playPauseButton {
+    #slider, #fileInput, #tokenInput, #initButton, #playPauseButton, #headingSlider {
       position: absolute;
       bottom: 20px;
     }
     #slider {
-      left: 50%;
+      left: 88.5%;
+      bottom: 225px;
       transform: translateX(-50%);
       width: 300px;
+      display: none; /* Initially hidden */
+    }
+    #headingSlider {
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: 18px;
+      width: 300px;
+      display: none; /* Initially hidden */
+    }
+    #headingLabel {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: 40px;
+      font-size: 14px;
+      color: white;
+      z-index: 1000;
       display: none; /* Initially hidden */
     }
     #pitchSlider {
@@ -68,10 +86,6 @@
       bottom: 30px;
       transform: translateX(-50%);
     }
-    #playPauseButton {
-      right: 480px;
-      display: none; /* Initially hidden */
-    }
     #map {
       position: absolute;
       bottom: 20px;
@@ -81,6 +95,24 @@
       z-index: 1000;
       display: none; /* Initially hidden */
       border: 2px solid black;
+    }
+    #playPauseButton {
+      right: 15px;
+      bottom: 245px;
+      display: none; /* Initially hidden */
+    }
+    #altitudeDisplay {
+      position: absolute;
+      top: 50px;
+      right: 10px;
+      color: white;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 10px;
+      border-radius: 5px;
+      font-family: Arial, sans-serif;
+      font-size: 14px;
+      z-index: 1000;
+      display: none; /* Initially hidden */
     }
     /* Intro Text Styling */
     #introText {
@@ -159,14 +191,22 @@
   <input type="range" id="slider" min="0" max="100" value="0">
   <div id="pitchLabel">Pitch</div>
   <input type="range" id="pitchSlider" min="-90" max="90" value="-15">
+
+  <!-- Viewing Direction Label and Slider -->
+  <label id="headingLabel" for="headingSlider">Viewing Direction</label>
+  <input type="range" id="headingSlider" min="-180" max="180" value="0">
+  
   <input type="file" id="fileInput" accept=".csv">
   <input type="text" id="tokenInput" placeholder="Enter Cesium Access Token">
   <button id="initButton">Initialise Map</button>
   <button id="playPauseButton">Play</button>
+  
+  <!-- Altitude Display -->
+  <div id="altitudeDisplay">Altitude: 0 meters</div>
 
   <!-- Progress Bar Container -->
   <div id="progressContainer">
-  <div id="progressBar">0%</div>
+    <div id="progressBar">0%</div>
   </div>
 
   <script>
@@ -189,12 +229,13 @@
         document.getElementById('slider').style.display = 'block';
         document.getElementById('fileInput').style.display = 'block';
         document.getElementById('playPauseButton').style.display = 'block';
+        document.getElementById('headingSlider').style.display = 'block';
+        document.getElementById('headingLabel').style.display = 'block';
         document.getElementById('tokenInput').style.display = 'none';
         document.getElementById('initButton').style.display = 'none';
-
-        // Show the pitch slider after initialization
         document.getElementById('pitchSlider').style.display = 'block';
         document.getElementById('pitchLabel').style.display = 'block';
+        document.getElementById('altitudeDisplay').style.display = 'block';
 
         // Hide the intro text after initialization
         document.getElementById('introText').style.display = 'none';
@@ -264,6 +305,7 @@
 
       readNextChunk(); // Start reading the first chunk
     }
+
     // Parse the CSV file
     function parseCSV(csvText) {
       const rows = csvText.split('\n');
@@ -309,7 +351,10 @@
       const { longitude, latitude, bearing, altitude } = coordinates[currentIndex];
       const destination = Cesium.Cartesian3.fromDegrees(longitude, latitude, altitude);
 
-      const heading = Cesium.Math.toRadians(bearing);
+      const baseHeading = Cesium.Math.toRadians(bearing);
+      const headingOffset = Cesium.Math.toRadians(parseFloat(document.getElementById('headingSlider').value));
+      const heading = baseHeading + headingOffset;
+
       const pitch = Cesium.Math.toRadians(parseFloat(document.getElementById('pitchSlider').value));
 
       viewer.camera.flyTo({
@@ -322,6 +367,11 @@
         duration: 0.1, // Shorter duration for faster transitions
         complete: () => {
           marker.setLatLng([latitude, longitude]); // Move the marker to the current point
+          document.getElementById('altitudeDisplay').textContent = `Altitude: ${altitude} meters`; // Update altitude display
+          
+          // Ensure altitude is a valid number and format it to 3 decimal places
+          const altitudeText = !isNaN(altitude) ? altitude.toFixed(3) : 'N/A';
+          document.getElementById('altitudeDisplay').textContent = `Altitude: ${altitudeText} meters`; // Update altitude display
           currentIndex += 2; // Increase step size to speed up flythrough (can adjust as needed)
           if (currentIndex >= coordinates.length) {
             currentIndex = 0; // Loop back to the start
@@ -348,7 +398,10 @@
       const { longitude, latitude, bearing, altitude } = coordinates[index];
       const destination = Cesium.Cartesian3.fromDegrees(longitude, latitude, altitude);
 
-      const heading = Cesium.Math.toRadians(bearing);
+      const baseHeading = Cesium.Math.toRadians(bearing);
+      const headingOffset = Cesium.Math.toRadians(parseFloat(document.getElementById('headingSlider').value));
+      const heading = baseHeading + headingOffset;
+
       const pitch = Cesium.Math.toRadians(parseFloat(document.getElementById('pitchSlider').value));
 
       viewer.camera.flyTo({
@@ -362,6 +415,9 @@
       });
 
       document.getElementById('slider').value = index;
+      const altitudeText = !isNaN(altitude) ? altitude.toFixed(3) : 'N/A';
+      document.getElementById('altitudeDisplay').textContent = `Altitude: ${altitudeText} meters`; // Update altitude display
+
       marker.setLatLng([latitude, longitude]); // Move the marker to the current point
     }
 
