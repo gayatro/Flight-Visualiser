@@ -1,7 +1,7 @@
 # Visualise Bird Flight
 https://gayatro.github.io/Flight-Visualiser/
 
-<img src="assets/demo.gif" alt="Description" style="width: 600px; height: auto;">
+<img src="assets/demo.gif" alt="Description" style="width: 400px; height: auto;">
 
 # Flight Visualiser Instructions
 
