@@ -36,7 +36,7 @@ Before using the Flight Visualiser, you need to have the following:
 5. **Start the Visualisation**:
    - After uploading the CSV file, once the leaflet map on the bottom right corner loads in, click the `Play` button next to the `Flight Progress` slider to start the flight visualisation.
    - Use the slider labeled `Flight Progress` to manually control the flight progress.
-   - Adjust the viewing direction with the `Viewing Direction` slider and change the camera pitch using the `Pitch` slider.
+   - Adjust the viewing direction with the `Viewing Direction` slider (to more closely observe a larger fovea) and change the camera pitch using the `Pitch` slider.
 
 6. **Pause or Resume the Visualisation**:
    - You can pause the flight at any time by clicking the `Pause` button. Click it again to resume.
