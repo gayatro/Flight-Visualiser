@@ -15,7 +15,7 @@ Before using the Flight Visualiser, you need to have the following:
 ## Setting Up the Data
 
 1. Ensure your CSV file is properly formatted with the required columns: `Longitude`, `Latitude`, `Altitude`, and `Bearing`.
-2. If necessary, visit the [GitHub repository](https://github.com/gayatro/fly-visual/tree/main) to run the "data-processor" script, which calculates the required parameters and formats your data for this simulator.
+2. Run the "data-processor.ipynb" script in this repository, which calculates the required parameters and formats your data for this simulator.
 
 ## How to Use
 
