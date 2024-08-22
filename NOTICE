@@ -1,0 +1,49 @@
+NOTICE
+
+This project includes components from the following third-party libraries:
+
+1. **CesiumJS**
+   - URL: https://cesium.com/downloads/cesiumjs/releases/1.88/Build/Cesium/Cesium.js
+   - License: Apache 2.0 License
+   - Copyright (c) 2011-2024, Cesium Contributors
+   - Full license text available at: https://github.com/CesiumGS/cesium/blob/main/LICENSE.md
+
+2. **Leaflet**
+   - URL: https://unpkg.com/leaflet@1.7.1/dist/leaflet.js
+   - License: BSD 2-Clause "Simplified" License
+   - Copyright (c) 2010-2024, Vladimir Agafonkin
+   - Full license text available at: https://github.com/Leaflet/Leaflet/blob/main/LICENSE
+
+3. **Pandas**
+   - URL: https://pandas.pydata.org/
+   - License: BSD 3-Clause "New" or "Revised" License
+   - Copyright (c) 2008-2024, the Pandas Development Team
+   - Full license text available at: https://github.com/pandas-dev/pandas/blob/main/LICENSE
+
+4. **Geopy**
+   - URL: https://geopy.readthedocs.io/
+   - License: MIT License
+   - Copyright (c) 2005-2024, GeoPy Contributors
+   - Full license text available at: https://github.com/geopy/geopy/blob/main/LICENSE
+
+5. **IPython Widgets**
+   - URL: https://ipywidgets.readthedocs.io/
+   - License: BSD 3-Clause "New" or "Revised" License
+   - Copyright (c) 2001-2024, IPython Development Team
+   - Full license text available at: https://github.com/jupyter-widgets/ipywidgets/blob/main/LICENSE
+
+6. **NumPy**
+   - URL: https://numpy.org/
+   - License: BSD 3-Clause License
+   - Copyright (c) 2005-2024, NumPy Developers
+   - Full license text available at: https://github.com/numpy/numpy/blob/main/LICENSE.txt
+
+This product includes modifications made by Gayatri Kumar as of 2024-08-22. These modifications include the development of additional functionality for data processing, interpolation, and integration of geospatial data using CesiumJS, Leaflet, Pandas, and other tools.
+
+All trademarks and registered trademarks mentioned herein are the property of their respective owners.
+
+This project is licensed under the Apache License, Version 2.0. You may obtain a copy of the License at:
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under the Apache License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
