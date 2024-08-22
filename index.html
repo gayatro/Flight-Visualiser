@@ -120,6 +120,27 @@
       text-align: right; /* Align to the right */
       margin-top: 10px; /* Add some space above */
     }
+    #progressContainer {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 1000;
+      width: 300px;
+      background-color: #f3f3f3;
+      border-radius: 5px;
+      display: none; /* Initially hidden */
+    }
+
+    #progressBar {
+      width: 0%;
+      height: 30px;
+      background-color: #4caf50;
+      border-radius: 5px;
+      text-align: center;
+      line-height: 30px;
+      color: white;
+    }
   </style>
 </head>
 <body>
@@ -142,6 +163,11 @@
   <input type="text" id="tokenInput" placeholder="Enter Cesium Access Token">
   <button id="initButton">Initialise Map</button>
   <button id="playPauseButton">Play</button>
+
+  <!-- Progress Bar Container -->
+  <div id="progressContainer">
+  <div id="progressBar">0%</div>
+  </div>
 
   <script>
     let viewer;
@@ -199,6 +225,45 @@
       }
     }
 
+    function processFileInChunks(file) {
+      const chunkSize = 1024 * 1024; // 1 MB chunks
+      const totalChunks = Math.ceil(file.size / chunkSize);
+      let currentChunk = 0;
+      coordinates = [];
+
+      const progressContainer = document.getElementById('progressContainer');
+      const progressBar = document.getElementById('progressBar');
+      progressContainer.style.display = 'block'; // Show progress bar
+
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        parseCSV(e.target.result); // Process each chunk
+        currentChunk++;
+        const progress = Math.floor((currentChunk / totalChunks) * 100);
+        progressBar.style.width = progress + '%';
+        progressBar.textContent = progress + '%';
+
+        if (currentChunk < totalChunks) {
+          readNextChunk();
+        } else {
+          progressContainer.style.display = 'none'; // Hide progress bar after completion
+          if (coordinates.length > 0) {
+            initializeMap(); // Initialize map after processing
+          } else {
+            alert('No valid coordinates found in the CSV file.');
+          }
+        }
+      };
+
+      function readNextChunk() {
+        const start = currentChunk * chunkSize;
+        const end = Math.min(start + chunkSize, file.size);
+        const blob = file.slice(start, end);
+        reader.readAsText(blob);
+      }
+
+      readNextChunk(); // Start reading the first chunk
+    }
     // Parse the CSV file
     function parseCSV(csvText) {
       const rows = csvText.split('\n');
@@ -316,13 +381,7 @@
     document.getElementById('fileInput').addEventListener('change', function (event) {
       const file = event.target.files[0];
       if (file) {
-        const reader = new FileReader();
-        reader.onload = function (e) {
-          const csvText = e.target.result;
-          coordinates = []; // Clear previous coordinates
-          parseCSV(csvText);
-        };
-        reader.readAsText(file);
+        processFileInChunks(file); // Use chunked processing for the file
       }
     });
 
