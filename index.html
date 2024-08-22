@@ -97,8 +97,8 @@
       border: 2px solid black;
     }
     #playPauseButton {
-      right: 15px;
-      bottom: 245px;
+      right: 20px;
+      bottom: 243px;
       display: none; /* Initially hidden */
     }
     #altitudeDisplay {
@@ -173,11 +173,21 @@
       line-height: 30px;
       color: white;
     }
+    #flightProgressLabel {
+      position: absolute;
+      right: 6%;
+      bottom: 243px; 
+      transform: translateX(-50%);
+      font-size: 14px;
+      color: white;
+      z-index: 1000;
+      display: none; /* Initially hidden */
+    }
   </style>
 </head>
 <body>
   <div id="introText">
-    <h1>Welcome to the Flight Simulator</h1>
+    <h1>Welcome to the Flight Visualiser</h1>
     <p>Please input your Cesium Access Token below and upload your CSV file on the next page to visualise the data in a 3D environment.</p>
     <p>If you do not have an access token, please create a free account and obtain one here: <a href="https://ion.cesium.com/signin/tokens?page=1" target="_blank">Cesium Ion</a>.</p>
     <p><strong>Important:</strong> The CSV file must contain the columns "Longitude", "Latitude", "Altitude", and "Bearing" (case sensitive).</p>
@@ -195,7 +205,10 @@
   <!-- Viewing Direction Label and Slider -->
   <label id="headingLabel" for="headingSlider">Viewing Direction</label>
   <input type="range" id="headingSlider" min="-180" max="180" value="0">
-  
+  <!-- Flight Progress label -->
+  <label id="flightProgressLabel" for="slider">Flight Progress</label>
+  <input type="range" id="slider" min="0" max="100" value="0">
+
   <input type="file" id="fileInput" accept=".csv">
   <input type="text" id="tokenInput" placeholder="Enter Cesium Access Token">
   <button id="initButton">Initialise Map</button>
@@ -236,6 +249,7 @@
         document.getElementById('pitchSlider').style.display = 'block';
         document.getElementById('pitchLabel').style.display = 'block';
         document.getElementById('altitudeDisplay').style.display = 'block';
+        document.getElementById('flightProgressLabel').style.display = 'block'; // Show the Flight Progress label
 
         // Hide the intro text after initialization
         document.getElementById('introText').style.display = 'none';
