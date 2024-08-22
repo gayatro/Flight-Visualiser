@@ -60,7 +60,10 @@ If the visualisation does not start:
 - Ensure that your CSV file contains valid numerical data for all required columns.
 - Check the console in your browser's developer tools for any error messages.
 - Try pressing the play button! The data may load in without making it too apparent. You can also spot this by seeing that the leaflet map in the bottom right corner has loaded in.
-  
+
+## Known Limitations
+- The terrain data is not completely accurate in some regions, causing rare instances where the camera appears to go 'below ground', however this should quickly resolve itself during the flythrough.
+
 ## Enjoy the Simulation!
 
 Explore and analyse your flight data in a dynamic 3D environment combined with a 2D map view.
