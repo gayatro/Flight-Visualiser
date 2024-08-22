@@ -4,7 +4,7 @@ https://gayatro.github.io/Flight-Visualiser/
 
 ## Overview
 
-The Flight Visualiser is a web-based tool that visualises flight data in a 3D environment using CesiumJS and a 2D map using Leaflet. The tool allows you to visualize a flight path based on data from a CSV file containing geographical coordinates.
+The Flight Visualiser is a web-based tool that visualises animal flight data in a 3D environment using CesiumJS and a 2D map using Leaflet. The tool allows you to visualize a flight path based on data from a CSV file containing geographical coordinates.
 
 ## Prerequisites
 
