@@ -327,8 +327,16 @@
       progressContainer.style.display = 'block'; // Show progress bar
     
       const reader = new FileReader();
+      var chunk_idx = 0;
+      var header = [];
       reader.onload = function (e) {
-        parseCSV(e.target.result); // Process each chunk
+        if (chunk_idx == 0) {
+          // If we are processing the first chunk, lets extract the header, and give it to all proceeding chunks!
+          const rows = e.target.result.split('\n');
+          header = rows[0].split(',').map(column => column.trim().toLowerCase());
+        }
+        chunk_idx++;
+        parseCSV(e.target.result, header);
         currentChunk++;
         const progress = Math.floor((currentChunk / totalChunks) * 100);
         progressBar.style.width = progress + '%';
@@ -353,9 +361,8 @@
       readNextChunk(); // Start reading the first chunk
     }
 
-    function parseCSV(csvText) {
+    function parseCSV(csvText, header) {
         const rows = csvText.split('\n');
-        const header = rows[0].split(',').map(column => column.trim().toLowerCase());
         const longitudeIndex = header.indexOf('longitude');
         const latitudeIndex = header.indexOf('latitude');
         const bearingIndex = header.indexOf('bearing');
