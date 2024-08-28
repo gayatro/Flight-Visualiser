@@ -101,18 +101,36 @@
       bottom: 243px;
       display: none; /* Initially hidden */
     }
-    #altitudeDisplay {
+    
+    #dateTimeDisplay {
       position: absolute;
-      top: 50px;
-      right: 10px;
+      top: 2%;
+      right: 17%;
       color: white;
       background: rgba(0, 0, 0, 0.7);
+      padding: 5px;
+      border-radius: 5px;
+      font-family: Arial, sans-serif;
+      font-size: 10px;
+      z-index: 1000;
+      display: none; /* Initially hidden */
+    }
+    #infoTable {
+      position: absolute;
+      top: 20%;
+      right: 10px;
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
       padding: 10px;
       border-radius: 5px;
       font-family: Arial, sans-serif;
-      font-size: 14px;
+      font-size: 12px;
       z-index: 1000;
       display: none; /* Initially hidden */
+    }
+    #infoTable th, #infoTable td {
+      padding: 4px 8px;
+      text-align: left;
     }
     /* Intro Text Styling */
     #introText {
@@ -163,7 +181,6 @@
       border-radius: 5px;
       display: none; /* Initially hidden */
     }
-
     #progressBar {
       width: 0%;
       height: 30px;
@@ -212,22 +229,33 @@
   <input type="range" id="slider" min="0" max="100" value="0">
   <div id="pitchLabel">Pitch</div>
   <input type="range" id="pitchSlider" min="-90" max="90" value="-15">
-
+  
   <!-- Viewing Direction Label and Slider -->
   <label id="headingLabel" for="headingSlider">Viewing Direction</label>
   <input type="range" id="headingSlider" min="-180" max="180" value="0">
+  
   <!-- Flight Progress label -->
   <label id="flightProgressLabel" for="slider">Flight Progress</label>
-  <input type="range" id="slider" min="0" max="100" value="0">
-
   <input type="file" id="fileInput" accept=".csv">
   <input type="text" id="tokenInput" placeholder="Enter Cesium Access Token">
   <button id="initButton">Initialise Map</button>
   <button id="playPauseButton">Play</button>
   
-  <!-- Altitude Display -->
-  <div id="altitudeDisplay">Altitude: 0 meters</div>
+  <!-- datetime display -->
+  <div id="dateTimeDisplay">Date: - | Time: - </div>
 
+  <!-- Information Table -->
+  <table id="infoTable">
+    <tr><th>Altitude (meters):</th><td id="altitudeCell">N/A</td></tr>
+    <tr><th>Temperature (ºC):</th><td id="tempCell">N/A</td></tr>
+    <tr><th>Precipitation (mm):</th><td id="precipCell">N/A</td></tr>
+    <tr><th>Humidity (%):</th><td id="humidityCell">N/A</td></tr>
+    <tr><th>Wind Gust (m/s):</th><td id="windCell">N/A</td></tr>
+    <tr><th>Weather Condition:</th><td id="weatherCell">N/A</td></tr>
+    <tr><th>Acceleration (m/s²):</th><td id="accelCell">N/A</td></tr>
+    <tr><th>Velocity (m/s):</th><td id="velocityCell">N/A</td></tr>
+  </table>
+  
   <!-- Progress Bar Container -->
   <div id="progressContainer">
     <div id="loadingText">Loading... (Please press "Okay" on the pop up if all parameters are correct)</div>
@@ -241,14 +269,10 @@
     let isPlaying = false;
     let map, marker, polyline;
 
-    // Function to initialize the Cesium viewer
     async function initializeCesium() {
       const accessToken = document.getElementById('tokenInput').value;
-
       if (accessToken) {
         Cesium.Ion.defaultAccessToken = accessToken;
-
-        // Show the Cesium container and controls
         document.getElementById('cesiumContainer').style.display = 'block';
         document.getElementById('map').style.display = 'block';
         document.getElementById('slider').style.display = 'block';
@@ -260,8 +284,10 @@
         document.getElementById('initButton').style.display = 'none';
         document.getElementById('pitchSlider').style.display = 'block';
         document.getElementById('pitchLabel').style.display = 'block';
-        document.getElementById('altitudeDisplay').style.display = 'block';
-        document.getElementById('flightProgressLabel').style.display = 'block'; // Show the Flight Progress label
+        document.getElementById('dateTimeDisplay').style.display = 'block';
+        document.getElementById('flightProgressLabel').style.display = 'block';
+        document.getElementById('infoTable').style.display = 'block';
+        document.getElementById('introText').style.display = 'none';
 
         // Hide the intro text after initialization
         document.getElementById('introText').style.display = 'none';
@@ -279,13 +305,12 @@
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
           maxZoom: 19
         }).addTo(map);
-
         polyline = L.polyline([], { color: 'red' }).addTo(map);
         marker = L.circleMarker([0, 0], {
-            radius: 4, // Radius of the circle in pixels
-            color: 'black', // Stroke color
-            fillColor: 'pink', // Fill color
-            fillOpacity: 0.5, // Fill opacity
+            radius: 4, // radius of circle
+            color: 'black', //stroke color
+            fillColor: 'pink', //fill
+            fillOpacity: 0.5,
         }).addTo(map).bringToFront();
       } else {
         alert('Please enter a valid Cesium access token.');
@@ -297,11 +322,10 @@
       const totalChunks = Math.ceil(file.size / chunkSize);
       let currentChunk = 0;
       coordinates = [];
-
       const progressContainer = document.getElementById('progressContainer');
       const progressBar = document.getElementById('progressBar');
       progressContainer.style.display = 'block'; // Show progress bar
-
+    
       const reader = new FileReader();
       reader.onload = function (e) {
         parseCSV(e.target.result); // Process each chunk
@@ -309,7 +333,6 @@
         const progress = Math.floor((currentChunk / totalChunks) * 100);
         progressBar.style.width = progress + '%';
         progressBar.textContent = progress + '%';
-
         if (currentChunk < totalChunks) {
           readNextChunk();
         } else {
@@ -321,150 +344,218 @@
           }
         }
       };
-
       function readNextChunk() {
         const start = currentChunk * chunkSize;
         const end = Math.min(start + chunkSize, file.size);
         const blob = file.slice(start, end);
         reader.readAsText(blob);
       }
-
       readNextChunk(); // Start reading the first chunk
     }
 
-    // Parse the CSV file
     function parseCSV(csvText) {
-      const rows = csvText.split('\n');
-      const header = rows[0].split(',').map(column => column.trim().toLowerCase());
-
-      const longitudeIndex = header.indexOf('longitude');
-      const latitudeIndex = header.indexOf('latitude');
-      const bearingIndex = header.indexOf('bearing');
-      const altitudeIndex = header.indexOf('altitude');
-
-      if (longitudeIndex === -1 || latitudeIndex === -1 || bearingIndex === -1 || altitudeIndex === -1) {
-        alert('CSV file must contain "Longitude", "Latitude", "Bearing", and "Altitude" columns.');
-        return;
-      }
-
-      rows.slice(1).forEach(row => {
-        const columns = row.split(',');
-        const longitude = parseFloat(columns[longitudeIndex]);
-        const latitude = parseFloat(columns[latitudeIndex]);
-        const bearing = parseFloat(columns[bearingIndex]);
-        const altitude = parseFloat(columns[altitudeIndex]);
-
-        if (!isNaN(longitude) && !isNaN(latitude) && !isNaN(bearing) && !isNaN(altitude)) {
-          coordinates.push({ longitude, latitude, bearing, altitude });
-          polyline.addLatLng([latitude, longitude]); // Add point to the polyline
+        const rows = csvText.split('\n');
+        const header = rows[0].split(',').map(column => column.trim().toLowerCase());
+        const longitudeIndex = header.indexOf('longitude');
+        const latitudeIndex = header.indexOf('latitude');
+        const bearingIndex = header.indexOf('bearing');
+        const altitudeIndex = header.indexOf('altitude');
+        const timeIndex = header.indexOf('time');
+    
+        const weatherIndex = header.indexOf('weather condition');
+        const tempIndex = header.indexOf('temperature (°c)');
+        const precipIndex = header.indexOf('precipitation (mm)');
+        const humidityIndex = header.indexOf('humidity (%)');
+        const windIndex = header.indexOf('wind gust (m/s)');
+        const accelIndex = header.indexOf('acceleration(m/s²)');
+        const velocityIndex = header.indexOf('velocity(m/s)');
+    
+        if (longitudeIndex === -1 || latitudeIndex === -1 || bearingIndex === -1 || altitudeIndex === -1 || timeIndex === -1) {
+            alert('Please ensure CSV file contains "Longitude", "Latitude", "Bearing", "Altitude", and "Time" columns. Loading data in chunks due to file size. Please press OK to continue processing...');
+            return;
         }
-      });
-
-      if (coordinates.length > 0) {
-        document.getElementById('slider').max = coordinates.length - 1;
-        const { latitude, longitude } = coordinates[0];
-        map.setView([latitude, longitude], 12); // Center the map on the first point
-        marker.setLatLng([latitude, longitude]); // Place the marker at the first point
-      } else {
-        alert('No valid coordinates found in the CSV file.');
-      }
+    
+        rows.slice(1).forEach(row => {
+            const columns = row.split(',').map(value => value.trim());
+            const longitude = parseFloat(columns[longitudeIndex]);
+            const latitude = parseFloat(columns[latitudeIndex]);
+            const bearing = parseFloat(columns[bearingIndex]);
+            const altitude = parseFloat(columns[altitudeIndex]);
+            const time = columns[timeIndex];
+    
+            const temp = tempIndex !== -1 && columns[tempIndex] !== '' && !isNaN(parseFloat(columns[tempIndex])) ? parseFloat(columns[tempIndex]) : 'N/A';
+            const precip = precipIndex !== -1 && columns[precipIndex] !== '' && !isNaN(parseFloat(columns[precipIndex])) ? parseFloat(columns[precipIndex]) : 'N/A';
+            const humidity = humidityIndex !== -1 && columns[humidityIndex] !== '' && !isNaN(parseFloat(columns[humidityIndex])) ? parseFloat(columns[humidityIndex]) : 'N/A';
+            const wind = windIndex !== -1 && columns[windIndex] !== '' && !isNaN(parseFloat(columns[windIndex])) ? parseFloat(columns[windIndex]) : 'N/A';
+            const weather = weatherIndex !== -1 && columns[weatherIndex] !== '' ? columns[weatherIndex] : 'N/A';
+            const accel = accelIndex !== -1 && columns[accelIndex] !== '' && !isNaN(parseFloat(columns[accelIndex])) ? parseFloat(columns[accelIndex]) : 'N/A';
+            const velocity = velocityIndex !== -1 && columns[velocityIndex] !== '' && !isNaN(parseFloat(columns[velocityIndex])) ? parseFloat(columns[velocityIndex]) : 'N/A';
+    
+            if (!isNaN(longitude) && !isNaN(latitude) && !isNaN(bearing) && !isNaN(altitude)) {
+                coordinates.push({ longitude, latitude, bearing, altitude, time, temp, precip, humidity, wind, weather, accel, velocity });
+                polyline.addLatLng([latitude, longitude]); // Add point to polyline
+            }
+        });
+    
+        if (coordinates.length > 0) {
+            document.getElementById('slider').max = coordinates.length - 1;
+            const { latitude, longitude } = coordinates[0];
+            map.setView([latitude, longitude], 12); // Center the map on the first point
+            marker.setLatLng([latitude, longitude]); // Place the marker at the first point
+        } else {
+            alert('No valid coordinates found in the CSV file.');
+        }
     }
 
-    // Function to move the camera continuously between points
+    // Function to format the time string to 2 significant figures for milliseconds
+    function formatTime(timeString) {
+        const [datePart, timePart] = timeString.split(' ');
+        const [hours, minutes, seconds] = timePart.split(':');
+        const [sec, ms] = seconds.split('.');
+
+        // Format milliseconds to 2 significant figures
+        const formattedMs = parseFloat(`0.${ms}`).toFixed(2).slice(2);
+
+        return `${hours}:${minutes}:${sec}.${formattedMs}`;
+    }
+
     function playFlythrough() {
-      if (!isPlaying || currentIndex >= coordinates.length) return;
+        if (!isPlaying || currentIndex >= coordinates.length) return;
 
-      const { longitude, latitude, bearing, altitude } = coordinates[currentIndex];
-      const destination = Cesium.Cartesian3.fromDegrees(longitude, latitude, altitude);
+        const { longitude, latitude, bearing, altitude, time, temp, precip, humidity, wind, weather, accel, velocity } = coordinates[currentIndex];
+        const destination = Cesium.Cartesian3.fromDegrees(longitude, latitude, altitude);
 
-      const baseHeading = Cesium.Math.toRadians(bearing);
-      const headingOffset = Cesium.Math.toRadians(parseFloat(document.getElementById('headingSlider').value));
-      const heading = baseHeading + headingOffset;
+        const baseHeading = Cesium.Math.toRadians(bearing);
+        const headingOffset = Cesium.Math.toRadians(parseFloat(document.getElementById('headingSlider').value));
+        const heading = baseHeading + headingOffset;
 
-      const pitch = Cesium.Math.toRadians(parseFloat(document.getElementById('pitchSlider').value));
+        const pitch = Cesium.Math.toRadians(parseFloat(document.getElementById('pitchSlider').value));
 
-      viewer.camera.flyTo({
-        destination: destination,
-        orientation: {
-          heading: heading,
-          pitch: pitch,
-          roll: 0
-        },
-        duration: 0.1, // Shorter duration for faster transitions
-        complete: () => {
-          marker.setLatLng([latitude, longitude]); // Move the marker to the current point
-          document.getElementById('altitudeDisplay').textContent = `Altitude: ${altitude} meters`; // Update altitude display
-          
-          // Ensure altitude is a valid number and format it to 3 decimal places
-          const altitudeText = !isNaN(altitude) ? altitude.toFixed(3) : 'N/A';
-          document.getElementById('altitudeDisplay').textContent = `Altitude: ${altitudeText} meters`; // Update altitude display
-          currentIndex += 2; // Increase step size to speed up flythrough (can adjust as needed)
-          if (currentIndex >= coordinates.length) {
-            currentIndex = 0; // Loop back to the start
-          }
-          playFlythrough(); // Continue the flythrough
+        viewer.camera.flyTo({
+            destination: destination,
+            orientation: {
+                heading: heading,
+                pitch: pitch,
+                roll: 0
+            },
+            duration: 0.1, // Shorter duration for faster transitions
+            complete: () => {
+                marker.setLatLng([latitude, longitude]); // Move the marker to the current point
+                updateInfoTable(altitude, temp, precip, humidity, wind, weather, accel, velocity); // Update info table
+
+                // Calculate formatted values
+                const altitudeText = !isNaN(altitude) ? altitude.toFixed(3) : 'N/A';
+                const formattedTime = formatTime(time);
+                const datePart = time.split(' ')[0]; // Extract the date part
+
+                // Update date and time in the dateTimeDisplay
+                document.getElementById('dateTimeDisplay').textContent = `Date: ${datePart} | Time: ${formattedTime}`;
+
+                // Update altitude in the info table
+                document.getElementById('altitudeCell').textContent = altitudeText;
+
+                currentIndex += 2; // Increase step size to speed up flythrough (can adjust as needed)
+                if (currentIndex >= coordinates.length) {
+                    currentIndex = 0;
+                }
+                playFlythrough(); // Continue flythrough
+            }
+        });
+
+        document.getElementById('slider').value = currentIndex;
+    }
+    
+    // Update table with information
+    function updateInfoTable(altitude, temp, precip, humidity, wind, weather, accel, velocity) {
+        // Function to format numbers, switch to scientific notation if necessary
+        function formatValue(value, allowScientific = true) {
+            if (value !== 'N/A') {
+                if (Math.abs(value) < 0.001 && allowScientific) {
+                    return value.toExponential(2); // Convert to scientific notation with 2 decimal places
+                } else {
+                    return value.toFixed(3); // Otherwise, format with 2 decimal places
+                }
+            } else {
+                return 'N/A';
+            }
         }
-      });
-
-      document.getElementById('slider').value = currentIndex;
+    
+        document.getElementById('altitudeCell').textContent = formatValue(altitude);
+        document.getElementById('tempCell').textContent = formatValue(temp);
+        document.getElementById('precipCell').textContent = formatValue(precip, false);
+        document.getElementById('humidityCell').textContent = formatValue(humidity);
+        document.getElementById('windCell').textContent = formatValue(wind);
+        document.getElementById('weatherCell').textContent = weather;
+        document.getElementById('accelCell').textContent = formatValue(accel);
+        document.getElementById('velocityCell').textContent = formatValue(velocity);
     }
 
-    // Event listener for the slider
+    // Event listener for slider input
     document.getElementById('slider').addEventListener('input', function (event) {
-      currentIndex = parseInt(event.target.value, 10);
-      isPlaying = false; // Stop the auto-play if the slider is used
-      document.getElementById('playPauseButton').textContent = 'Play';
-      moveToCoordinate(currentIndex, 0.1); // Instant move for slider interaction
+        currentIndex = parseInt(event.target.value, 10);
+        isPlaying = false;
+        document.getElementById('playPauseButton').textContent = 'Play';
+        moveToCoordinate(currentIndex, 0.1);
     });
 
-    // Function to move the camera to a specific point with bearing and elevation
+    // Function to move the camera to a specific point with bearing and elevation    
     function moveToCoordinate(index, duration = 0.1) {
-      if (index < 0 || index >= coordinates.length) return;
+        if (index < 0 || index >= coordinates.length) return;
 
-      const { longitude, latitude, bearing, altitude } = coordinates[index];
-      const destination = Cesium.Cartesian3.fromDegrees(longitude, latitude, altitude);
+        const { longitude, latitude, bearing, altitude, time, temp, precip, humidity, wind, weather, accel, velocity } = coordinates[index];
+        const destination = Cesium.Cartesian3.fromDegrees(longitude, latitude, altitude);
 
-      const baseHeading = Cesium.Math.toRadians(bearing);
-      const headingOffset = Cesium.Math.toRadians(parseFloat(document.getElementById('headingSlider').value));
-      const heading = baseHeading + headingOffset;
+        const baseHeading = Cesium.Math.toRadians(bearing);
+        const headingOffset = Cesium.Math.toRadians(parseFloat(document.getElementById('headingSlider').value));
+        const heading = baseHeading + headingOffset;
 
-      const pitch = Cesium.Math.toRadians(parseFloat(document.getElementById('pitchSlider').value));
+        const pitch = Cesium.Math.toRadians(parseFloat(document.getElementById('pitchSlider').value));
 
-      viewer.camera.flyTo({
-        destination: destination,
-        orientation: {
-          heading: heading,
-          pitch: pitch,
-          roll: 0
-        },
-        duration: duration
-      });
+        viewer.camera.flyTo({
+            destination: destination,
+            orientation: {
+                heading: heading,
+                pitch: pitch,
+                roll: 0
+            },
+            duration: duration
+        });
 
-      document.getElementById('slider').value = index;
-      const altitudeText = !isNaN(altitude) ? altitude.toFixed(3) : 'N/A';
-      document.getElementById('altitudeDisplay').textContent = `Altitude: ${altitudeText} meters`; // Update altitude display
+        document.getElementById('slider').value = index;
 
-      marker.setLatLng([latitude, longitude]); // Move the marker to the current point
+        // Calculate formatted values
+        const altitudeText = !isNaN(altitude) ? altitude.toFixed(3) : 'N/A';
+        const formattedTime = formatTime(time);
+        const datePart = time.split(' ')[0]; // Extract the date part
+
+        // Update date and time in the dateTimeDisplay
+        document.getElementById('dateTimeDisplay').textContent = `Date: ${datePart} | Time: ${formattedTime}`;
+
+        // Update altitude in the info table
+        document.getElementById('altitudeCell').textContent = altitudeText;
+
+        marker.setLatLng([latitude, longitude]); // Move the marker to the current point
+        updateInfoTable(altitude, temp, precip, humidity, wind, weather, accel, velocity); // Update the info table
     }
 
     // Event listener for play/pause button
     document.getElementById('playPauseButton').addEventListener('click', function () {
-      if (isPlaying) {
-        isPlaying = false;
-        this.textContent = 'Play';
-      } else {
-        isPlaying = true;
-        this.textContent = 'Pause';
-        playFlythrough(); // Start the flythrough
-      }
+        if (isPlaying) {
+            isPlaying = false;
+            this.textContent = 'Play';
+        } else {
+            isPlaying = true;
+            this.textContent = 'Pause';
+            playFlythrough(); // Start the flythrough
+        }
     });
 
     // Event listener for file input
     document.getElementById('fileInput').addEventListener('change', function (event) {
-      const file = event.target.files[0];
-      if (file) {
-        processFileInChunks(file); // Use chunked processing for the file
-      }
+        const file = event.target.files[0];
+        if (file) {
+            processFileInChunks(file); // Use chunked processing for the file
+        }
     });
 
     // Initialize Cesium on button click
