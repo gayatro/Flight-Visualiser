@@ -9,6 +9,16 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
   <style>
+  /* Base styling for scaling */
+    body, html {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      font-family: Arial, sans-serif;
+    }
+    
+    /* Responsive container */
     #cesiumContainer {
       width: 100%;
       height: 100vh;
@@ -16,199 +26,249 @@
       padding: 0;
       display: none; /* Initially hidden */
     }
+    
+    /* Responsive input fields and buttons */
     #slider, #fileInput, #tokenInput, #initButton, #playPauseButton, #headingSlider {
       position: absolute;
       bottom: 2%;
     }
+    
     #slider {
-      right: 0.6%;
-      bottom: 32%;
-      top: 63%;
-      width: 300px;
+      right: 0.3%;
+      bottom: 30%;
+      top: auto;
+      width: 20vw;
+      height: 1vh;
       display: none; /* Initially hidden */
     }
+    
     #headingSlider {
       left: 50%;
       transform: translateX(-50%);
-      bottom: 3%;
-      width: 300px;
+      bottom: 4%;
+      width: 20vw;
+      height: 1vh;
       display: none; /* Initially hidden */
     }
+    
     #headingLabel {
       position: absolute;
       left: 50%;
       transform: translateX(-50%);
-      bottom: 6.3%;
-      font-size: 14px;
+      bottom: 6%;
+      font-size: 1vw;
       color: white;
       z-index: 1000;
       display: none; /* Initially hidden */
     }
+    
     #pitchSlider {
       position: absolute;
-      left: 1.3%; /* Position it towards the left of the screen */
-      top: 72%; /* Adjust position */
-      transform: translateY(-50%) rotate(-90deg); /* Rotate it to make it vertical */
-      width: 300px;
-      height: 20px; /* Adjust the height */
-      transform-origin: left center; /* Set the rotation origin */
-      writing-mode: bt-lr; /* Set writing mode to ensure the slider is vertical */
+      left: 0.8%;
+      top: 65%;
+      transform: translateY(-50%) rotate(-90deg);
+      width: 20vw;
+      height: 1.8vh;
+      transform-origin: left center;
       display: none; /* Initially hidden */
-      background: transparent; /* Ensure the background is transparent */
-      z-index: 1000; /* Ensure it's above other elements */
+      background: transparent;
+      z-index: 1000;
     }
+    
     #pitchLabel {
       position: absolute;
       color: #ffffff;
-      left: 2.7%; /* Position it to the right of the slider */
-      top: 55%; /* Align with the slider */
-      transform: translateY(-50%) rotate(-90deg); /* Rotate the text to match the slider */
-      transform-origin: left center;
-      font-size: 13px;
+      left: 1%;
+      top: 45%;
+      transform: translateY(-50%) rotate(-90deg);
+      font-size: 1vw;
       font-weight: bold;
       z-index: 1000;
       display: none; /* Initially hidden */
     }
+    
     #fileInput {
-      left: 0.8%;
-      top: 1.6%;
+      left: 2%;
+      top: 2%;
       display: none; /* Initially hidden */
     }
+    
     #tokenInput {
-      left: 45%;
+      left: 42%;
       bottom: 6%;
       transform: translateX(-50%);
-      width: 300px;
-      padding: 10px;
+      width: 20vw;
+      padding: 1vh;
     }
+    
     #initButton {
-      right: 31%;
+      right: 30%;
       bottom: 7%;
       transform: translateX(-50%);
     }
+    
     #map {
       position: absolute;
-      bottom: 2.8%;
-      right: 0.56%;
-      width: 300px;
-      height: 200px;
+      bottom: 3.5%;
+      right: 0.1%;
+      width: 20vw;
+      height: 25vh;
       z-index: 1000;
       display: none; /* Initially hidden */
       border: 2px solid black;
     }
+    
     #playPauseButton {
       right: 1.5%;
-      bottom: 35.7%;
+      bottom: 33%;
       display: none; /* Initially hidden */
     }
     
     #dateTimeDisplay {
       position: absolute;
       top: 2%;
-      right: 17%;
+      right: 15%;
       color: white;
       background: rgba(0, 0, 0, 0.7);
-      padding: 5px;
+      padding: 1vh;
       border-radius: 5px;
       font-family: Arial, sans-serif;
-      font-size: 10px;
+      font-size: 1vw;
       z-index: 1000;
       display: none; /* Initially hidden */
     }
+    
     #infoTable {
       position: absolute;
       top: 7%;
-      right: 1.3%;
+      right: 1%;
       background: rgba(0, 0, 0, 0.7);
       color: white;
-      padding: 10px;
-      border-radius: 5px;
+      padding: 0.3vw; /* Reduced padding */
+      border-radius: 2px; /* Reduced border radius */
       font-family: Arial, sans-serif;
-      font-size: 12px;
+      font-size: 1vw; /* Reduced font size */
       z-index: 1000;
       display: none; /* Initially hidden */
     }
+
+    
     #infoTable th, #infoTable td {
-      padding: 4px 8px;
+      padding: 0.4vw 0.8vw;
       text-align: left;
     }
-    /* Intro Text Styling */
+    
     #introText {
       position: absolute;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
       z-index: 1000;
-      background: rgba(255, 255, 255, 0.9); /* Semi-transparent background */
-      padding: 20px;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 1vw; /* Reduced padding */
       border-radius: 10px;
       box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-      max-width: 600px;
+      max-width: 50vw; /* Reduced max-width */
       text-align: left;
     }
+
+    /* Adjust text inside the box */
     #introText h1 {
-      margin-bottom: 20px;
-      font-size: 28px;
-      text-align: center;
+      margin-bottom: 1.5vw;
+      font-size: 2vw; /* Reduce the font size */
     }
+
     #introText p {
-      margin: 10px 0;
-      font-size: 16px;
-      line-height: 1.5;
+      margin: 0.5vw 0;
+      font-size: 1.2vw; /* Reduce the font size */
     }
+
+    
     #introText a {
       color: #007bff;
       text-decoration: none;
     }
+    
     #introText a:hover {
       text-decoration: underline;
     }
-    /* Styling for Terms of Service Link */
+    
     #termsLink {
-      font-size: 10px; /* Make the text smaller */
+      font-size: 1vw;
       display: block;
-      text-align: right; /* Align to the right */
-      margin-top: 10px; /* Add some space above */
+      text-align: right;
+      margin-top: 1vh;
     }
+    
     #progressContainer {
       position: absolute;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
       z-index: 1000;
-      width: 300px;
+      width: 20vw;
       background-color: #f3f3f3;
       border-radius: 5px;
       display: none; /* Initially hidden */
     }
+    
     #progressBar {
       width: 0%;
-      height: 30px;
+      height: 5vh;
       background-color: #4caf50;
       border-radius: 5px;
       text-align: center;
-      line-height: 30px;
+      line-height: 5vh;
       color: white;
     }
+    
     #loadingText {
       position: absolute;
-      top: -36px; 
-      left: 22%;
+      top: -6vh;
+      left: 11%;
       transform: translateX(-10%);
-      font-size: 13px;
+      font-size: 0.9vw;
       color: #ffffff;
       font-weight: bold;
     }
+    
     #flightProgressLabel {
       position: absolute;
-      right: 6%;
-      bottom: 36%; 
+      right: 4.5%;
+      bottom: 33%;
       transform: translateX(-50%);
-      font-size: 14px;
+      font-size: 1vw;
       color: white;
       z-index: 1000;
       display: none; /* Initially hidden */
     }
+    
+    /* Media Queries for smaller screens */
+    @media (max-width: 768px) {
+      #slider, #headingSlider, #pitchSlider {
+        width: 40vw;
+      }
+    
+      #map {
+        width: 40vw;
+        height: 40vh;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      #introText {
+        max-width: 80vw;
+        padding: 5vw;
+      }
+    
+      #introText h1 {
+        font-size: 5vw;
+      }
+    
+      #introText p {
+        font-size: 3vw;
+      }
+    }    
   </style>
 </head>
 <body>
@@ -258,7 +318,7 @@
   
   <!-- Progress Bar Container -->
   <div id="progressContainer">
-    <div id="loadingText">Loading... (Please press "Okay" on the pop up if all parameters are correct)</div>
+    <div id="loadingText">Loading... (Please close any pop-ups if all parameters are correct!)</div>
     <div id="progressBar">0%</div>
   </div>
 
