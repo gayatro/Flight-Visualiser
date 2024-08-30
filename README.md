@@ -62,7 +62,7 @@ If the visualisation does not start:
 - Try pressing the play button! The data may load in without making it too apparent. You can also spot this by seeing that the leaflet map in the bottom right corner has loaded in.
 
 ## Known Limitations
-- The terrain data is not completely accurate in some regions, causing rare instances where the camera appears to go 'below ground', however this should quickly resolve itself during the flythrough.
+- The terrain data is not completely accurate in some regions, causing rare instances where the camera appears to go 'below ground', however this should quickly resolve itself during the flythrough. This also happens if the bird goes into shrubbery or trees, it appears to "enter the map". 
 
 ## Enjoy the Simulation!
 
